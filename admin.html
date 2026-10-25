@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Брони на Курчатова</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Yeseva+One&family=Golos+Text:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: одна колонка для телефона — шапка, календарь, брони выбранного дня, добавление, ближайшие брони */
+:root{
+  --bg:#fbf6ee; --surface:#ffffff; --fg:#33261a; --muted:#7a6650; --line:#ead9c2;
+  --accent:#b06a2c; --accent-fg:#ffffff; --green:#2f6b55; --green-fg:#ffffff; --green-light:#e4efe8;
+  --wood-light:#f3e3cc; --danger:#b3261e; --busy:#d9cfc2;
+  --display:"Yeseva One", Georgia, serif;
+  --body:"Golos Text", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5}
+.wrap{max-width:640px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+header{background:var(--green);color:var(--green-fg)}
+header .wrap{padding-block:18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+header h1{font-family:var(--display);font-weight:400;font-size:1.5rem;margin:0;line-height:1.1}
+header a{color:inherit;font-size:.9rem}
+main .wrap{padding-block:18px 48px;display:grid;gap:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:12px}
+h2{font-size:1.05rem;margin:0;font-weight:600}
+.muted{color:var(--muted);font-size:.9rem}
+.num{font-variant-numeric:tabular-nums}
+label{font-weight:500;font-size:.95rem}
+input,select{width:100%;font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 12px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field{display:grid;gap:5px;min-width:0}
+.btn{font:inherit;font-weight:600;background:var(--accent);color:var(--accent-fg);border:0;border-radius:10px;padding:13px 18px;cursor:pointer}
+.btn.green{background:var(--green)}
+.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.btn.small{padding:8px 12px;font-size:.9rem}
+.btn.danger{background:var(--danger);color:#fff}
+.btn:disabled{opacity:.5;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.seg button{font:inherit;font-size:.9rem;font-weight:600;padding:9px 6px;border-radius:10px;border:2px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer}
+.seg button[aria-pressed=true]{border-color:var(--green);background:var(--green-light);color:var(--green)}
+.cal-head{display:flex;align-items:center;justify-content:space-between}
+.cal-head b{text-transform:capitalize}
+.nav{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-size:1.1rem;cursor:pointer;color:var(--fg)}
+.grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;text-align:center}
+.dow{font-size:.75rem;color:var(--muted);font-weight:600}
+.day{position:relative;aspect-ratio:1/1;max-height:50px;border:0;border-radius:9px;background:var(--bg);font:inherit;font-weight:500;cursor:pointer;color:var(--fg);padding:0}
+.day.past{color:var(--busy)}
+.day.has{background:var(--wood-light)}
+.day .dots{position:absolute;bottom:4px;left:0;right:0;display:flex;justify-content:center;gap:3px}
+.day .dots i{width:6px;height:6px;border-radius:50%}
+.d-raj{background:var(--green)}.d-yashma{background:var(--accent)}
+.day.sel{outline:3px solid var(--green);outline-offset:-3px}
+.day.today{font-weight:700;text-decoration:underline}
+.legend{display:flex;gap:14px;font-size:.8rem;color:var(--muted)}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.list{display:grid;gap:8px}
+.item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.item .t{min-width:0}
+.item b{font-weight:600}
+.tag{display:inline-block;font-size:.78rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-left:6px}
+.tag.raj{background:var(--green-light);color:var(--green)}
+.tag.yashma{background:var(--wood-light);color:var(--accent)}
+.confirm{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.msg{padding:10px 12px;border-radius:10px;font-size:.92rem}
+.msg.ok{background:var(--green-light);color:var(--green)}
+.msg.bad{background:#fdf1ef;color:var(--danger)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom, 0px));background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:.92rem;max-width:calc(100% - 32px);z-index:5}
+ol{margin:0;padding-left:20px;display:grid;gap:6px}
+code{background:var(--wood-light);padding:1px 5px;border-radius:5px;font-size:.88em;overflow-wrap:anywhere}
+</style>
+</head>
+<body>
+<header><div class="wrap"><h1>Брони на&nbsp;Курчатова</h1><a href="./">Сайт</a></div></header>
+<main><div class="wrap">
+
+  <!-- Вход -->
+  <section class="card" id="login" hidden>
+    <h2>Вход для владельца</h2>
+    <p class="muted" style="margin:0">Вставьте ключ доступа. Его нужно ввести один раз, телефон его запомнит.</p>
+    <div class="field"><label for="token">Ключ доступа</label><input id="token" type="password" autocomplete="off" placeholder="github_pat_…"></div>
+    <div class="msg bad" id="login-err" hidden></div>
+    <button class="btn green" id="login-btn" type="button">Войти</button>
+  </section>
+
+  <!-- Работа -->
+  <div id="app" hidden style="display:grid;gap:18px">
+    <section class="card">
+      <div class="seg" role="group" aria-label="Какую баню показывать">
+        <button type="button" data-f="all" aria-pressed="true">Обе</button>
+        <button type="button" data-f="raj" aria-pressed="false">Райский спа</button>
+        <button type="button" data-f="yashma" aria-pressed="false">Яшма</button>
+      </div>
+      <div class="cal-head"><button class="nav" id="prev" type="button" aria-label="Предыдущий месяц">‹</button><b id="mtitle"></b><button class="nav" id="next" type="button" aria-label="Следующий месяц">›</button></div>
+      <div class="grid" id="cal"></div>
+      <div class="legend"><span><i class="d-raj"></i>Райский спа</span><span><i class="d-yashma"></i>Яшма</span></div>
+    </section>
+
+    <section class="card">
+      <h2 id="day-title"></h2>
+      <div class="list" id="day-list"></div>
+    </section>
+
+    <section class="card">
+      <h2>Добавить бронь</h2>
+      <div class="field"><label for="a-banya">Баня</label><select id="a-banya"><option value="raj">Райский спа</option><option value="yashma">Яшма</option></select></div>
+      <div class="field"><label for="a-date">Дата</label><input id="a-date" type="date"></div>
+      <div class="row">
+        <div class="field"><label for="a-from">С</label><input id="a-from" type="time" value="18:00" step="1800"></div>
+        <div class="field"><label for="a-to">До</label><input id="a-to" type="time" value="21:00" step="1800"></div>
+      </div>
+      <div class="msg bad" id="add-err" hidden></div>
+      <button class="btn" id="add-btn" type="button">Добавить бронь</button>
+      <p class="muted" style="margin:0">Имена и телефоны гостей сюда не пишутся: файл с бронями виден всем.</p>
+    </section>
+
+    <section class="card">
+      <h2>Ближайшие брони</h2>
+      <div class="list" id="upcoming"></div>
+    </section>
+
+    <button class="btn ghost" id="logout" type="button">Выйти на этом устройстве</button>
+  </div>
+
+  <section class="card" id="help">
+    <h2>Где взять ключ доступа</h2>
+    <p class="muted" style="margin:0">Делает тот, у кого аккаунт GitHub с сайтом, один раз.</p>
+    <ol class="muted">
+      <li>Откройте <code>github.com/settings/personal-access-tokens/new</code></li>
+      <li>Token name: <code>Брони сауна</code>. Expiration: 1 год.</li>
+      <li>Repository access: <b>Only select repositories</b> → <code>sauna</code>.</li>
+      <li>Permissions → Repository permissions → <b>Contents</b>: <b>Read and write</b>.</li>
+      <li>Нажмите <b>Generate token</b> и скопируйте ключ.</li>
+    </ol>
+  </section>
+</div></main>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function(){
+  const OWNER='Elena31313456', REPO='sauna', PATH='zanyato.txt', BRANCH='main';
+  const API=`https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`;
+  const NAMES={raj:'Райский спа', yashma:'Яшма'};
+  const $=id=>document.getElementById(id);
+  const store={get(k){try{return localStorage.getItem(k)}catch(_){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(_){}},del(k){try{localStorage.removeItem(k)}catch(_){}}};
+
+  let token=store.get('gh_token')||'', sha=null, header=[], other=[], items=[], filter='all';
+  const today=new Date(); today.setHours(0,0,0,0);
+  let view=new Date(today.getFullYear(),today.getMonth(),1), sel=new Date(today);
+
+  const pad=n=>String(n).padStart(2,'0');
+  const dayNo=d=>Math.round(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5);
+  const fromNo=n=>{const d=new Date(n*864e5);return new Date(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate());};
+  const hm=m=>{m=((m%1440)+1440)%1440;return pad(Math.floor(m/60))+':'+pad(m%60);};
+  const dstr=d=>pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+d.getFullYear();
+  const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+
+  function toast(t){$('toast').textContent=t;$('toast').hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>$('toast').hidden=true,3500);}
+  const b64dec=s=>new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\s/g,'')),c=>c.charCodeAt(0)));
+  const b64enc=s=>{const b=new TextEncoder().encode(s);let r='';for(let i=0;i<b.length;i+=8192)r+=String.fromCharCode.apply(null,b.subarray(i,i+8192));return btoa(r);};
+
+  function parse(txt){
+    header=[];other=[];items=[];let seen=false;
+    txt.split(/\r?\n/).forEach(raw=>{
+      const line=raw.replace(/#.*/,'').trim();
+      if(!line){ if(!seen && raw.trim()) header.push(raw); return; }
+      const m=line.match(/(\d{1,2})\.(\d{1,2})\.(\d{4})\s+(\d{1,2})[:.](\d{2})\s*[-–—]\s*(\d{1,2})[:.](\d{2})\s+(.+)/);
+      const nm=m&&m[8].toLowerCase(); const b=nm&&(nm.includes('яшм')?'yashma':nm.includes('рай')?'raj':null);
+      if(!m||!b){ other.push(raw); seen=true; return; }
+      seen=true;
+      const base=dayNo(new Date(+m[3],+m[2]-1,+m[1]))*1440, s=base+(+m[4])*60+(+m[5]); let e=base+(+m[6])*60+(+m[7]); if(e<=s)e+=1440;
+      items.push({b,s,e});
+    });
+  }
+  function serialize(){
+    const lines=items.slice().sort((a,b)=>a.s-b.s).map(x=>{const d=fromNo(Math.floor(x.s/1440));return dstr(d)+' '+hm(x.s)+'-'+(x.e-x.s===1440-(x.s%1440)?'24:00':hm(x.e))+' '+NAMES[x.b];});
+    return [...header,'',...lines,...other].join('\n').replace(/\n{3,}/g,'\n\n').trim()+'\n';
+  }
+
+  async function api(method,body){
+    const r=await fetch(API+(method==='GET'?'?ref='+BRANCH+'&t='+Date.now():''),{method,headers:{'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json'},body:body?JSON.stringify(body):undefined,cache:'no-store'});
+    if(r.status===401||r.status===403) throw {code:'auth'};
+    if(r.status===409||r.status===422) throw {code:'conflict'};
+    if(!r.ok) throw {code:'net',status:r.status};
+    return r.json();
+  }
+  async function load(){
+    const j=await api('GET'); sha=j.sha; parse(b64dec(j.content)); render();
+  }
+  async function save(msg){
+    const j=await api('PUT',{message:msg,content:b64enc(serialize()),sha,branch:BRANCH});
+    sha=j.content.sha;
+  }
+  async function change(mutate,msg,okText){
+    try{
+      mutate(); await save(msg); render(); toast(okText+'. На сайте обновится через 1–2 минуты.');
+    }catch(e){
+      if(e.code==='conflict'){ toast('Файл только что изменили с другого устройства. Обновила данные, повторите действие.'); await load().catch(()=>{}); }
+      else if(e.code==='auth'){ toast('Ключ доступа не подходит или истёк. Войдите заново.'); logout(); }
+      else { toast('Нет связи с GitHub. Проверьте интернет и повторите.'); await load().catch(()=>{}); }
+    }
+  }
+
+  const visible=()=>items.filter(x=>filter==='all'||x.b===filter);
+  function onDay(d){const s=dayNo(d)*1440,e=s+1440;return visible().filter(x=>x.s<e&&x.e>s).sort((a,b)=>a.s-b.s);}
+
+  function itemEl(x,showDate){
+    const el=document.createElement('div'); el.className='item';
+    const t=document.createElement('div'); t.className='t num';
+    const d=fromNo(Math.floor(x.s/1440));
+    t.innerHTML='<b></b><span class="tag '+x.b+'"></span>';
+    t.querySelector('b').textContent=(showDate?d.toLocaleDateString('ru-RU',{day:'numeric',month:'short',weekday:'short'})+', ':'')+hm(x.s)+'–'+hm(x.e);
+    t.querySelector('.tag').textContent=NAMES[x.b];
+    const c=document.createElement('div'); c.className='confirm';
+    const del=document.createElement('button'); del.type='button'; del.className='btn ghost small'; del.textContent='Отменить';
+    del.onclick=()=>{
+      c.innerHTML='';
+      const yes=document.createElement('button'); yes.type='button'; yes.className='btn danger small'; yes.textContent='Да, отменить';
+      const no=document.createElement('button'); no.type='button'; no.className='btn ghost small'; no.textContent='Нет';
+      no.onclick=()=>{c.innerHTML='';c.appendChild(del);};
+      yes.onclick=()=>{yes.disabled=true;change(()=>{items=items.filter(y=>y!==x);},'Отмена: '+dstr(d)+' '+hm(x.s)+' '+NAMES[x.b],'Бронь отменена');};
+      c.append(yes,no);
+    };
+    c.appendChild(del); el.append(t,c); return el;
+  }
+
+  function render(){
+    document.querySelectorAll('[data-f]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.f===filter));
+    $('mtitle').textContent=view.toLocaleString('ru-RU',{month:'long',year:'numeric'}).replace(' г.','');
+    const g=$('cal'); g.innerHTML='';
+    ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].forEach(d=>{const s=document.createElement('div');s.className='dow';s.textContent=d;g.appendChild(s);});
+    const y=view.getFullYear(),mo=view.getMonth(),first=(new Date(y,mo,1).getDay()+6)%7;
+    for(let i=0;i<first;i++) g.appendChild(document.createElement('div'));
+    for(let d=1;d<=new Date(y,mo+1,0).getDate();d++){
+      const day=new Date(y,mo,d), b=document.createElement('button'), list=onDay(day);
+      b.type='button'; b.className='day num'+(day<today?' past':'')+(list.length?' has':'')+(dayNo(day)===dayNo(sel)?' sel':'')+(dayNo(day)===dayNo(today)?' today':'');
+      b.textContent=d;
+      if(list.length){const dots=document.createElement('span');dots.className='dots';[...new Set(list.map(x=>x.b))].forEach(k=>{const i=document.createElement('i');i.className='d-'+k;dots.appendChild(i);});b.appendChild(dots);}
+      b.setAttribute('aria-label',day.toLocaleDateString('ru-RU',{day:'numeric',month:'long'})+(list.length?', броней: '+list.length:', свободно'));
+      b.onclick=()=>{sel=day;$('a-date').value=iso(day);render();};
+      g.appendChild(b);
+    }
+    $('day-title').textContent=sel.toLocaleDateString('ru-RU',{day:'numeric',month:'long',weekday:'long'});
+    const dl=$('day-list'); dl.innerHTML=''; const lst=onDay(sel);
+    if(!lst.length){const p=document.createElement('div');p.className='muted';p.textContent='Броней нет.';dl.appendChild(p);} else lst.forEach(x=>dl.appendChild(itemEl(x,false)));
+    const up=$('upcoming'); up.innerHTML=''; const now=dayNo(today)*1440;
+    const fut=visible().filter(x=>x.e>now).sort((a,b)=>a.s-b.s).slice(0,15);
+    if(!fut.length){const p=document.createElement('div');p.className='muted';p.textContent='Броней пока нет.';up.appendChild(p);} else fut.forEach(x=>up.appendChild(itemEl(x,true)));
+  }
+
+  $('add-btn').onclick=()=>{
+    const b=$('a-banya').value, dv=$('a-date').value, f=$('a-from').value, t=$('a-to').value, err=$('add-err');
+    err.hidden=true;
+    if(!dv||!f||!t){err.textContent='Заполните дату и время.';err.hidden=false;return;}
+    const [Y,M,D]=dv.split('-').map(Number), day=new Date(Y,M-1,D);
+    const [fh,fm]=f.split(':').map(Number),[th,tm]=t.split(':').map(Number);
+    const s=dayNo(day)*1440+fh*60+fm; let e=dayNo(day)*1440+th*60+tm; if(e<=s)e+=1440;
+    const clash=items.filter(x=>x.b===b&&x.s<e&&x.e>s);
+    if(clash.length){err.textContent='Это время в бане «'+NAMES[b]+'» уже занято: '+clash.map(x=>hm(x.s)+'–'+hm(x.e)).join(', ')+'.';err.hidden=false;return;}
+    $('add-btn').disabled=true;
+    change(()=>{items.push({b,s,e});},'Бронь: '+dstr(day)+' '+f+'-'+t+' '+NAMES[b],'Бронь добавлена').finally(()=>{$('add-btn').disabled=false;sel=day;view=new Date(day.getFullYear(),day.getMonth(),1);render();});
+  };
+  document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{filter=b.dataset.f;render();});
+  $('prev').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()-1,1);render();};
+  $('next').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);render();};
+
+  function logout(){token='';store.del('gh_token');$('app').hidden=true;$('login').hidden=false;$('help').hidden=false;}
+  $('logout').onclick=logout;
+  async function start(){
+    $('login').hidden=true;
+    try{ await load(); $('app').hidden=false; $('help').hidden=true; }
+    catch(e){
+      $('login').hidden=false; $('app').hidden=true;
+      $('login-err').textContent = e.code==='auth' ? 'Ключ не подходит. Проверьте, что он скопирован целиком и у него есть доступ Contents: Read and write к репозиторию sauna.' : 'Не удалось связаться с GitHub. Проверьте интернет и попробуйте ещё раз.';
+      $('login-err').hidden=false;
+    }
+  }
+  $('login-btn').onclick=()=>{const v=$('token').value.trim(); if(!v){$('login-err').textContent='Вставьте ключ доступа.';$('login-err').hidden=false;return;} token=v; store.set('gh_token',v); start();};
+  $('a-date').value=iso(today);
+  if(token) start(); else $('login').hidden=false;
+})();
+</script>
+</body>
+</html>
