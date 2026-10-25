@@ -110,7 +110,8 @@ input[aria-invalid=true]{border-color:var(--danger);background:#fdf1ef}
 .seg span{font-size:.85rem;color:var(--muted)}
 
 /* Календарь */
-.datebox{display:grid;gap:10px;align-items:start}
+.datebox{display:grid;gap:18px;align-items:start}
+.side{display:grid;gap:18px;align-content:start;min-width:0}
 @media (min-width:720px){.datebox{grid-template-columns:360px 1fr}}
 .day{max-height:44px!important}
 .cal{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--bg);display:grid;gap:8px}
@@ -258,23 +259,24 @@ footer a{color:inherit}
           <div class="cal-grid" id="cal"></div>
           <div class="legend"><span><i style="background:var(--surface);border:1px solid var(--line)"></i>свободно</span><span><i style="background:var(--accent);border-radius:50%"></i>частично занято</span><span><i style="background:var(--busy)"></i>занято</span></div>
         </div>
+        <div class="side">
         <div class="busy-list" id="busy" aria-live="polite"></div>
+        <div class="field">
+          <div class="row" style="grid-template-columns:1fr 1fr">
+            <div class="field"><label for="t-from">С</label><select id="t-from" class="num"></select></div>
+            <div class="field"><label for="t-to">До</label><select id="t-to" class="num"></select></div>
+          </div>
+          <span class="hint" id="h-hint">Минимум 3 часа</span>
+        </div>
+
+        <div class="field">
+          <span class="lab">Гостей</span>
+          <div class="stepper"><button type="button" id="g-minus" aria-label="Меньше гостей">−</button><output id="guests" class="num">8</output><button type="button" id="g-plus" aria-label="Больше гостей">+</button></div>
+          <span class="hint" id="g-hint"></span>
+        </div>
+        </div>
         </div>
         <span class="hint" id="load-note"></span>
-      </div>
-
-      <div class="field">
-        <div class="row" style="grid-template-columns:1fr 1fr">
-          <div class="field"><label for="t-from">С</label><select id="t-from" class="num"></select></div>
-          <div class="field"><label for="t-to">До</label><select id="t-to" class="num"></select></div>
-        </div>
-        <span class="hint" id="h-hint">Минимум 3 часа</span>
-      </div>
-
-      <div class="field">
-        <span class="lab">Гостей</span>
-        <div class="stepper"><button type="button" id="g-minus" aria-label="Меньше гостей">−</button><output id="guests" class="num">8</output><button type="button" id="g-plus" aria-label="Больше гостей">+</button></div>
-        <span class="hint" id="g-hint"></span>
       </div>
 
       <label class="check" id="chan-row"><input type="checkbox" id="chan"><span><b>Чан под открытым небом</b> · <span class="nw">3 000 ₽</span> за всё посещение</span></label>
