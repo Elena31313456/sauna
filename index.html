@@ -110,6 +110,9 @@ input[aria-invalid=true]{border-color:var(--danger);background:#fdf1ef}
 .seg span{font-size:.85rem;color:var(--muted)}
 
 /* Календарь */
+.datebox{display:grid;gap:10px;align-items:start}
+@media (min-width:720px){.datebox{grid-template-columns:360px 1fr}}
+.day{max-height:44px!important}
 .cal{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--bg);display:grid;gap:8px}
 .cal-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .cal-head b{font-weight:600;text-transform:capitalize}
@@ -146,6 +149,9 @@ input[aria-invalid=true]{border-color:var(--danger);background:#fdf1ef}
 
 .done{background:var(--surface);border:2px solid var(--green);border-radius:16px;padding:22px;display:grid;gap:14px}
 .done h3{margin:0;color:var(--green);font-size:1.15rem}
+.sent{display:grid;gap:4px;background:var(--green-light);border-radius:10px;padding:12px 14px;color:var(--green)}
+.sent b{font-weight:700;font-size:1.05rem}
+.sent span{color:var(--fg);font-size:.92rem}
 .msg{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:14px;font-size:.95rem;margin:0;overflow-wrap:anywhere;user-select:all;font-family:var(--body)}
 .actions{display:flex;flex-wrap:wrap;gap:10px}
 .phone{font-size:1.4rem;font-weight:700}
@@ -246,12 +252,14 @@ footer a{color:inherit}
 
       <div class="field">
         <span class="lab">Дата</span>
+        <div class="datebox">
         <div class="cal">
           <div class="cal-head"><button type="button" class="cal-nav" id="m-prev" aria-label="Предыдущий месяц">‹</button><b id="m-title"></b><button type="button" class="cal-nav" id="m-next" aria-label="Следующий месяц">›</button></div>
           <div class="cal-grid" id="cal"></div>
           <div class="legend"><span><i style="background:var(--surface);border:1px solid var(--line)"></i>свободно</span><span><i style="background:var(--accent);border-radius:50%"></i>частично занято</span><span><i style="background:var(--busy)"></i>занято</span></div>
         </div>
         <div class="busy-list" id="busy" aria-live="polite"></div>
+        </div>
         <span class="hint" id="load-note"></span>
       </div>
 
@@ -291,9 +299,10 @@ footer a{color:inherit}
 
     <div class="done" id="done" hidden>
       <h3>Заявка готова. Осталось отправить её владельцу</h3>
-      <p style="margin:0">Нажмите кнопку: текст заявки скопируется и откроется чат с владельцем во ВКонтакте. Вставьте текст и отправьте. Бронь действует после подтверждения.</p>
+      <p style="margin:0" id="send-help">Выберите, как отправить заявку владельцу.</p>
       <pre class="msg" id="msg"></pre>
-      <div class="actions"><a class="btn" id="vk" href="https://vk.me/annaermakova898" target="_blank" rel="noopener">Отправить во ВКонтакте</a><button class="btn ghost" type="button" id="copy">Только скопировать</button><button class="btn ghost" type="button" id="back">Изменить</button></div>
+      <div class="sent" id="sent" role="status" hidden><b>Заявка отправлена? Ждите подтверждения.</b><span id="sent-text"></span></div>
+      <div class="actions"><a class="btn" id="sms" href="#" hidden>Отправить по SMS</a><a class="btn" id="vk" href="https://vk.me/annaermakova898" target="_blank" rel="noopener">Отправить во ВКонтакте</a><button class="btn ghost" type="button" id="copy">Только скопировать</button><button class="btn ghost" type="button" id="back">Изменить</button></div>
       <div><div class="label">Телефон для брони</div><div class="phone num"><a href="tel:+79090800806">8 909 080-08-06</a></div></div>
     </div>
   </div>
@@ -514,10 +523,23 @@ footer a{color:inherit}
     ];
     const c=$('comment').value.trim(); if(c) lines.push('Комментарий: '+c);
     $('msg').textContent=lines.join('\n');
+    $('sent').hidden=true;
+    $('sms').hidden=!touch; $('sms').href='sms:+79090800806?&body='+encodeURIComponent(lines.join('\n'));
+    $('send-help').textContent = touch
+      ? 'По SMS текст заявки подставится сам, останется нажать «Отправить». Во ВКонтакте текст скопируется, его нужно вставить в чат.'
+      : 'Нажмите кнопку: текст заявки скопируется и откроется чат с владельцем во ВКонтакте. Вставьте текст (Ctrl+V) и отправьте.';
     $('form').hidden=true; $('done').hidden=false; $('done').scrollIntoView({behavior:'smooth',block:'start'});
   });
   $('back').onclick=()=>{$('done').hidden=true;$('form').hidden=false;};
-  $('vk').addEventListener('click',()=>{ try{ navigator.clipboard.writeText($('msg').textContent).catch(()=>{}); }catch(_){} $('vk').textContent='Текст скопирован, вставьте его в чат'; });
+  const touch = window.matchMedia && matchMedia('(pointer:coarse)').matches;
+  function showSent(how){
+    $('sent-text').textContent = how==='sms'
+      ? 'Если SMS ушло, владелец ответит вам на этот номер. Бронь действует только после подтверждения.'
+      : 'Текст заявки уже скопирован: в открывшемся чате ВКонтакте нажмите в поле сообщения и выберите «Вставить» (на компьютере Ctrl+V), затем «Отправить». Владелец ответит вам там же. Бронь действует только после подтверждения.';
+    $('sent').hidden=false;
+  }
+  $('vk').addEventListener('click',()=>{ try{ navigator.clipboard.writeText($('msg').textContent).catch(()=>{}); }catch(_){} showSent('vk'); });
+  $('sms').addEventListener('click',()=>showSent('sms'));
   $('copy').onclick=()=>{
     const t=$('msg').textContent;
     const ok=()=>{$('copy').textContent='Скопировано';setTimeout(()=>$('copy').textContent='Только скопировать',2000)};
