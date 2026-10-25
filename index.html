@@ -98,6 +98,9 @@ textarea{min-height:80px;resize:vertical}
 .ferr{font-size:.85rem;color:var(--danger);font-weight:500}
 input[aria-invalid=true]{border-color:var(--danger);background:#fdf1ef}
 
+.chosen{display:flex;align-items:center;gap:10px;background:var(--green);color:var(--green-fg);border-radius:12px;padding:12px 16px}
+.chosen b{font-family:var(--display);font-weight:400;font-size:1.5rem;line-height:1.1}
+.chosen span{font-size:.9rem;opacity:.85}
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .seg label{display:grid;gap:2px;border:2px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;background:var(--bg)}
 .seg input{position:absolute;opacity:0;pointer-events:none}
@@ -232,8 +235,9 @@ footer a{color:inherit}
   <div class="wrap">
     <h2>Бронирование</h2>
     <form id="form" novalidate>
+      <div class="chosen" aria-live="polite"><div style="display:grid"><span>Вы бронируете баню</span><b id="chosen-name">Райский спа</b></div></div>
       <div class="field">
-        <span class="lab">Баня</span>
+        <span class="lab">Сменить баню</span>
         <div class="seg" role="radiogroup" aria-label="Баня">
           <label><input type="radio" name="banya" id="b-raj" value="raj" checked><b>Райский спа</b><span>до 14 гостей, чан</span></label>
           <label><input type="radio" name="banya" id="b-yashma" value="yashma"><b>Яшма</b><span>до 30 гостей</span></label>
@@ -282,7 +286,7 @@ footer a{color:inherit}
       </div>
 
       <div class="err" id="err" role="alert"></div>
-      <button class="btn" type="submit">Оформить заявку</button>
+      <button class="btn" type="submit" id="submit-btn">Оформить заявку: Райский спа</button>
     </form>
 
     <div class="done" id="done" hidden>
@@ -433,6 +437,7 @@ footer a{color:inherit}
     $('guests').textContent = guests;
     $('g-minus').disabled = guests<=1; $('g-plus').disabled = guests>=B.cap;
     $('g-hint').textContent = B.name+': до '+B.cap+' гостей';
+    $('chosen-name').textContent = B.name; $('submit-btn').textContent = 'Оформить заявку: '+B.name;
     drawCal(); drawBusy(); drawTimes();
     const rent=hours*PRICE_H, c=$('chan').checked?PRICE_CHAN:0, ds=$('dishes').checked?PRICE_DISH:0;
     $('t-rent').textContent=hours?'Аренда, '+hours+' ч × 2 000 ₽':'Аренда (выберите время)'; $('t-rent-v').textContent=rub(rent);
