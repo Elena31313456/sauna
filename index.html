@@ -150,6 +150,9 @@ input[aria-invalid=true]{border-color:var(--danger);background:#fdf1ef}
 
 .done{background:var(--surface);border:2px solid var(--green);border-radius:16px;padding:22px;display:grid;gap:14px}
 .done h3{margin:0;color:var(--green);font-size:1.15rem}
+.howto{display:grid;gap:6px;background:#fdf1ef;border:1px solid #f1c7c2;border-left:4px solid var(--danger);border-radius:10px;padding:12px 14px;font-size:.95rem;color:#5c1712}
+.howto b{font-weight:700;color:var(--danger);font-size:1.02rem}
+.howto ol{margin:0;padding-left:20px;display:grid;gap:4px}
 .sent{display:grid;gap:4px;background:var(--green-light);border-radius:10px;padding:12px 14px;color:var(--green)}
 .sent b{font-weight:700;font-size:1.05rem}
 .sent span{color:var(--fg);font-size:.92rem}
@@ -301,10 +304,20 @@ footer a{color:inherit}
 
     <div class="done" id="done" hidden>
       <h3>Заявка готова. Осталось отправить её владельцу</h3>
-      <p style="margin:0" id="send-help">Выберите, как отправить заявку владельцу.</p>
+
       <pre class="msg" id="msg"></pre>
+
+      <div class="actions"><a class="btn" id="sms" href="#" hidden>Отправить по SMS</a><a class="btn" id="vk" href="https://vk.me/annaermakova898" target="_blank" rel="noopener">Отправить во ВКонтакте</a><button class="btn ghost" type="button" id="back">Изменить</button></div>
+      <div class="howto" id="send-help">
+        <b>Сообщение не отправится автоматически</b>
+        <ol>
+          <li>Нажмите «Отправить во ВКонтакте». Текст заявки сам скопируется в буфер обмена, и откроется чат с владельцем.</li>
+          <li>Вставьте текст в поле сообщения: на компьютере Ctrl+V, на телефоне долгое нажатие на поле → «Вставить».</li>
+          <li>Нажмите «Отправить» в чате и ждите подтверждения брони от владельца.</li>
+        </ol>
+        <span id="sms-note" hidden>Или нажмите «Отправить по SMS»: текст подставится сам, останется нажать «Отправить».</span>
+      </div>
       <div class="sent" id="sent" role="status" hidden><b>Заявка отправлена? Ждите подтверждения.</b><span id="sent-text"></span></div>
-      <div class="actions"><a class="btn" id="sms" href="#" hidden>Отправить по SMS</a><a class="btn" id="vk" href="https://vk.me/annaermakova898" target="_blank" rel="noopener">Отправить во ВКонтакте</a><button class="btn ghost" type="button" id="copy">Только скопировать</button><button class="btn ghost" type="button" id="back">Изменить</button></div>
       <div><div class="label">Телефон для брони</div><div class="phone num"><a href="tel:+79090800806">8 909 080-08-06</a></div></div>
     </div>
   </div>
@@ -527,9 +540,7 @@ footer a{color:inherit}
     $('msg').textContent=lines.join('\n');
     $('sent').hidden=true;
     $('sms').hidden=!touch; $('sms').href='sms:+79090800806?&body='+encodeURIComponent(lines.join('\n'));
-    $('send-help').textContent = touch
-      ? 'По SMS текст заявки подставится сам, останется нажать «Отправить». Во ВКонтакте текст скопируется, его нужно вставить в чат.'
-      : 'Нажмите кнопку: текст заявки скопируется и откроется чат с владельцем во ВКонтакте. Вставьте текст (Ctrl+V) и отправьте.';
+    $('sms-note').hidden=!touch;
     $('form').hidden=true; $('done').hidden=false; $('done').scrollIntoView({behavior:'smooth',block:'start'});
   });
   $('back').onclick=()=>{$('done').hidden=true;$('form').hidden=false;};
@@ -537,17 +548,11 @@ footer a{color:inherit}
   function showSent(how){
     $('sent-text').textContent = how==='sms'
       ? 'Если SMS ушло, владелец ответит вам на этот номер. Бронь действует только после подтверждения.'
-      : 'Текст заявки уже скопирован: в открывшемся чате ВКонтакте нажмите в поле сообщения и выберите «Вставить» (на компьютере Ctrl+V), затем «Отправить». Владелец ответит вам там же. Бронь действует только после подтверждения.';
+      : 'Текст уже в буфере обмена: вставьте его в открывшийся чат ВКонтакте и нажмите «Отправить». Владелец ответит вам там же. Бронь действует только после подтверждения.';
     $('sent').hidden=false;
   }
   $('vk').addEventListener('click',()=>{ try{ navigator.clipboard.writeText($('msg').textContent).catch(()=>{}); }catch(_){} showSent('vk'); });
   $('sms').addEventListener('click',()=>showSent('sms'));
-  $('copy').onclick=()=>{
-    const t=$('msg').textContent;
-    const ok=()=>{$('copy').textContent='Скопировано';setTimeout(()=>$('copy').textContent='Только скопировать',2000)};
-    const fallback=()=>{const r=document.createRange();r.selectNodeContents($('msg'));const s=getSelection();s.removeAllRanges();s.addRange(r);$('copy').textContent='Текст выделен, скопируйте его';};
-    try{ navigator.clipboard.writeText(t).then(ok,fallback); }catch(_){ fallback(); }
-  };
 
   $('chan').checked=true;
   update();
